@@ -1,116 +1,150 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+/* App 整体布局：清除 flex，改为绝对定位让 3D 占据整个背景 */
+.app-container {
+  position: relative;
+  width: 100vw;
+  height: 100dvh; /* 动态视口高度，适配移动端工具栏展开收起 */
+  background: #0f1115;
+  color: #f1f5f9;
+  overflow: hidden;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
-}
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+/* 画布区域：绝对定位占满底层 (z-index: 0)，承载 3D 渲染和 OrbitControls 的一切点击 */
+.canvas-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
+/* UI 根层：悬浮在画布上方 (z-index: 10)，pointer-events: none 防止阻挡底层渲染的鼠标拖拽 */
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none; /* 让所有的点击穿透给 3D */
+  display: flex;
+  align-items: flex-end; /* 放置在底部 */
+  justify-content: center; /* 居中 */
+  padding-bottom: 30px; /* 距离底部 30px 空隙，可根据情况在移动端使用 safe-area */
+}
+
+/* 底部功能条：悬浮在底部的横向或者紧凑输入对话框 */
+.command-bar {
+  pointer-events: auto; /* 恢复对本容器内所有点击的响应 */
+  width: 90%;
+  max-width: 600px;
+  background: rgba(30, 33, 41, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  padding: 1rem 1.2rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  gap: 0.8rem;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
 
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
+.input-form {
   display: flex;
-  justify-content: center;
+  position: relative;
+  gap: 0.6rem;
+  width: 100%;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
+.prompt-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0 1.2rem;
+  color: white;
+  font-size: 1rem;
   outline: none;
+  min-width: 0; /* 允许在窄屏 flex item 收缩 */
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-#greet-input {
-  margin-right: 5px;
+.prompt-input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
+.prompt-input::placeholder {
+  color: #64748b;
+}
 
-  a:hover {
-    color: #24c8db;
-  }
+.generate-btn, .clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+.generate-btn {
+  gap: 0.5rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+}
+
+.generate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.generate-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generate-btn:disabled {
+  background: rgba(255,255,255, 0.05);
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-text {
+  display: inline-block;
+}
+
+.clear-btn {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.clear-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.clear-btn:disabled {
+  color: #475569;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.05);
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .command-bar {
+    width: 94%;
+    padding: 0.8rem;
   }
-  button:active {
-    background-color: #0f0f0f69;
+  .ui-layer {
+    padding-bottom: 20px;
+  }
+  .prompt-input {
+    padding: 0 0.8rem;
+  }
+  .generate-btn {
+    padding: 0.8rem; /* 缩小左右间距 */
   }
 }

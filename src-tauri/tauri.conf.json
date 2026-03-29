@@ -14,7 +14,9 @@
       {
         "title": "fxplayer",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "theme": "Dark",
+        "backgroundColor": [15, 17, 21, 255]
       }
     ],
     "security": {
