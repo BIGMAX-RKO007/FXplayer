@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Canvas } from "@react-three/fiber";
-import { Environment, ContactShadows, OrbitControls } from "@react-three/drei";
+import { Environment, OrbitControls, ContactShadows } from "@react-three/drei";
 import { Sparkles, Trash2 } from "lucide-react";
 import { SceneObject, ObjectRenderer } from "./components/ObjectRenderer";
 import "./App.css";
+
+// 检测是否运行在移动端（Android/iOS）
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 function App() {
   const [objects, setObjects] = useState<SceneObject[]>([]);
@@ -15,8 +18,8 @@ function App() {
   async function generateObject() {
     setIsGenerating(true);
     try {
-      // 传递用户的输入至后端，虽然暂时只会走随机派发逻辑，但通道已打通
-      const newObject = await invoke<SceneObject>("generate_3d_object", { 
+      // 传递用户的输入至大模型网关进行语义解析
+      const newObject = await invoke<SceneObject>("interpret_dream", { 
         input: inputValue 
       });
       setObjects((prev) => [...prev, newObject]);
@@ -44,33 +47,36 @@ function App() {
       {/* 底层：全屏画布层 (z-index: 0) */}
       <div className="canvas-container">
         {/* r3f Canvas 会自动挂载 resize 侦听器并自适应父容器大小 */}
-        <Canvas shadows camera={{ position: [0, 3, 10], fov: 45 }}>
+        {/* mobile: 不启用 shadows，以避免 Android WebGL 阴影采样器与 HDR 纹理格式冲突 */}
+        <Canvas shadows={!isMobile} camera={{ position: [0, 3, 10], fov: 45 }}>
           <color attach="background" args={['#0f1115']} />
 
-          {/* HDR 环境光贴图，提供极高质感的材质反射 */}
+          {/* HDR 环境光贴图；移动端 WebGL 兼容性已通过关闭 shadows 保障 */}
           <Environment preset="studio" />
-          <ambientLight intensity={0.2} />
+          <ambientLight intensity={isMobile ? 0.6 : 0.2} />
           
-          {/* 主光源与阴影投射 */}
+          {/* 主光源；移动端降低阴影贴图分辨率以适应 GLES 驱动限制 */}
           <directionalLight
-            castShadow
+            castShadow={!isMobile}
             position={[8, 15, 8]}
             intensity={1.2}
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
+            shadow-mapSize-width={isMobile ? 512 : 1024}
+            shadow-mapSize-height={isMobile ? 512 : 1024}
             shadow-bias={-0.0001}
           />
           <directionalLight position={[-5, 5, -5]} intensity={0.5} />
           
-          {/* 接触阴影：赋予大地存在感，让物体看起来稳固落在地面上 */}
-          <ContactShadows 
-            position={[0, -2.5, 0]} 
-            opacity={0.8} 
-            scale={30} 
-            blur={2.5} 
-            far={10} 
-            color="#000000"
-          />
+          {/* 桌面端接触阴影；移动端跳过避免 GL_SAMPLER_2D_SHADOW_EXT 格式不兼容 */}
+          {!isMobile && (
+            <ContactShadows 
+              position={[0, -2.5, 0]} 
+              opacity={0.8} 
+              scale={30} 
+              blur={2.5} 
+              far={10} 
+              color="#000000"
+            />
+          )}
 
           {/* 渲染场景实体，传递 onExpire 回调 */}
           {objects.map((obj) => (
