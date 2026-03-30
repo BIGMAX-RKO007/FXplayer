@@ -1,22 +1,20 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useLogger } from '../utils/logger';
+import type { AISceneObject } from '../types/scene';
 
-export interface SceneObject {
-  id: string;
-  geometryType: string;
-  color: string;
-  position: [number, number, number];
-  scale: [number, number, number];
-  points?: [number, number][]; // 大模型下发的坐标序列
-  lifespan: number; // 生命周期，毫秒
-}
+// 保留向后兼容的导出别名（App.tsx 用 SceneObject 联合类型，但此处内部使用 AISceneObject）
+export type { AISceneObject as SceneObject };
 
-export function ObjectRenderer({ object, onExpire }: { object: SceneObject, onExpire: (id: string) => void }) {
+
+export function ObjectRenderer({ object, onExpire }: { object: AISceneObject, onExpire: (id: string) => void }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [isDying, setIsDying] = useState(false);
   const targetScale = new THREE.Vector3(...object.scale);
   const zeroScale = new THREE.Vector3(0, 0, 0);
+
+  const { addLog } = useLogger();
 
   // 【缓存计算】将 JSON 数组转为 Three.js 能理解的纯量 Vector2 (生成 Lathe 使用)
   const lathePoints = useMemo(() => {
@@ -41,15 +39,22 @@ export function ObjectRenderer({ object, onExpire }: { object: SceneObject, onEx
   }, [object.geometryType, object.points]);
 
   useEffect(() => {
-    // 提前 600ms 触发缩小死亡动画
+    // ── 挂载日志 ──
+    addLog('info', 'UI/RENDER', `🎨 ObjectRenderer 挂载: id=${object.id.slice(0, 8)}… type=${object.geometryType} color=${object.color} points=${object.points?.length ?? 0}个 lifespan=${object.lifespan}ms`);
+    if (object.geometryType === 'lathe' || object.geometryType === 'extrude') {
+      addLog('debug', 'UI/GEOMETRY', `参数化几何体构建: type=${object.geometryType} | ${object.points?.length ?? 0} 个控制点`);
+    }
+
     const shrinkTime = Math.max(0, object.lifespan - 600);
     
     const shrinkTimer = setTimeout(() => {
+      addLog('warn', 'UI/LIFECYCLE', `⏳ ${object.id.slice(0, 8)}… 触发退场动画`);
       setIsDying(true);
     }, shrinkTime);
 
     // 真正从 React 状态中移除
     const removeTimer = setTimeout(() => {
+      addLog('debug', 'UI/GC', `💨 ${object.id.slice(0, 8)}… 生展终止 → onExpire() → Three.js GC`);
       onExpire(object.id);
     }, object.lifespan);
 

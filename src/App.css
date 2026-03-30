@@ -148,3 +148,437 @@
     padding: 0.8rem; /* 缩小左右间距 */
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   场景物体计数器
+───────────────────────────────────────────────────────────── */
+.scene-counter {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   素材库切换按钮
+───────────────────────────────────────────────────────────── */
+.library-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.08);
+  color: #34d399;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.library-toggle-btn:hover {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.5);
+  transform: translateY(-1px);
+}
+.library-toggle-btn.active {
+  background: rgba(52, 211, 153, 0.22);
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   素材库浮层定位容器
+───────────────────────────────────────────────────────────── */
+.library-overlay {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  pointer-events: auto;
+  width: 90%;
+  max-width: 640px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   素材库面板本体
+───────────────────────────────────────────────────────────── */
+.asset-library-panel {
+  background: rgba(10, 12, 18, 0.92);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  animation: lib-slide-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes lib-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.asset-library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(52, 211, 153, 0.06);
+}
+.asset-library-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6ee7b7;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.asset-library-count {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.asset-scale-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.asset-scale-label {
+  font-size: 0.72rem;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+.asset-scale-slider {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  background: rgba(52, 211, 153, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.asset-scale-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #34d399;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
+.asset-scale-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #34d399;
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.asset-grid {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(52, 211, 153, 0.2) transparent;
+}
+.asset-grid::-webkit-scrollbar { width: 4px; }
+.asset-grid::-webkit-scrollbar-thumb { background: rgba(52, 211, 153, 0.2); border-radius: 2px; }
+
+.asset-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+}
+.asset-card:last-child { border-bottom: none; }
+.asset-card:hover { background: rgba(255, 255, 255, 0.03); }
+
+.asset-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; line-height: 1; }
+.asset-info { flex: 1; min-width: 0; }
+.asset-name { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-bottom: 0.2rem; }
+.asset-desc { font-size: 0.72rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.asset-anims { display: flex; gap: 0.3rem; margin-top: 0.3rem; flex-wrap: wrap; }
+.asset-anim-badge {
+  font-size: 0.62rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  font-family: 'Consolas', monospace;
+}
+.asset-add-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.asset-add-btn:hover {
+  background: rgba(52, 211, 153, 0.25);
+  border-color: #34d399;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+}
+.asset-add-btn.added {
+  background: rgba(52, 211, 153, 0.3);
+  border-color: #34d399;
+  color: #6ee7b7;
+  font-size: 0.9rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+
+   日志切换按钮
+───────────────────────────────────────────────────────────── */
+.log-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: rgba(167, 139, 250, 0.08);
+  color: #a78bfa;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.log-toggle-btn:hover {
+  background: rgba(167, 139, 250, 0.18);
+  border-color: rgba(167, 139, 250, 0.5);
+  transform: translateY(-1px);
+}
+
+.log-toggle-btn.active {
+  background: rgba(167, 139, 250, 0.22);
+  border-color: #a78bfa;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.3);
+  color: #c4b5fd;
+}
+
+/* 日志数量角标 */
+.log-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #6366f1;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   日志浮层遮罩
+───────────────────────────────────────────────────────────── */
+.log-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 110px 0;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   日志面板本体
+───────────────────────────────────────────────────────────── */
+.log-panel {
+  pointer-events: auto;
+  width: 90%;
+  max-width: 720px;
+  height: 55vh;
+  max-height: 480px;
+  background: rgba(10, 11, 16, 0.88);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 18px;
+  box-shadow:
+    0 -4px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: log-slide-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes log-slide-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* 标题栏 */
+.log-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.log-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.log-count {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.log-panel-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.log-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.log-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+/* 滚动区域 */
+.log-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  /* 自定义滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.25) transparent;
+}
+
+.log-body::-webkit-scrollbar { width: 4px; }
+.log-body::-webkit-scrollbar-track { background: transparent; }
+.log-body::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.25); border-radius: 2px; }
+
+/* 单条日志 */
+.log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.28rem 1rem;
+  border-left: 2px solid transparent;
+  transition: background 0.1s;
+}
+
+.log-entry:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.log-ts {
+  color: #374151;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  padding-top: 0.05em;
+}
+
+.log-stage {
+  color: #4b5563;
+  flex-shrink: 0;
+  min-width: 90px;
+  font-size: 0.68rem;
+  padding-top: 0.05em;
+}
+
+.log-level {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  padding-top: 0.05em;
+}
+
+.log-message {
+  color: #d1d5db;
+  word-break: break-all;
+  flex: 1;
+}
+
+/* 空状态 */
+.log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0.8rem;
+  color: #374151;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .log-panel {
+    width: 96%;
+    height: 60vh;
+    border-radius: 14px;
+  }
+  .log-panel-overlay {
+    padding-bottom: 100px;
+  }
+}
